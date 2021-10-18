@@ -168,4 +168,10 @@ class _KronaItemState extends State<KronaItem> {
       ],
     );
   }
+
+  @override
+  void dispose() {
+    _textFieldControllerKrona.dispose();
+    super.dispose();
+  }
 }

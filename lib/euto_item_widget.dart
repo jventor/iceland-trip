@@ -168,4 +168,10 @@ class _EuroItemState extends State<EuroItem> {
       ],
     );
   }
+
+  @override
+  void dispose() {
+    _textFieldControllerEuro.dispose();
+    super.dispose();
+  }
 }

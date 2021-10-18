@@ -165,4 +165,10 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
           );
         });
   }
+
+  @override
+  void dispose() {
+    _textFieldController.dispose();
+    super.dispose();
+  }
 }
