@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:iceland_trip/euto_item_widget.dart';
-import 'package:iceland_trip/krona_item_widget.dart';
+import 'package:iceland_trip/calculator_screen.dart';
+import 'package:iceland_trip/map_screen.dart';
 import 'package:iceland_trip/rate.dart';
 import 'package:iceland_trip/inputs_formatters/rate_regex_input_formatter.dart';
 import 'package:iceland_trip/tools.dart';
@@ -11,7 +11,8 @@ void main() {
   runApp(
     MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => Rate()),
+        ChangeNotifierProvider(
+            create: (_) => Rate(initialCurrency: Currencies.eur)),
       ],
       child: const MyApp(),
     ),
@@ -41,15 +42,12 @@ class MyStatefulWidget extends StatefulWidget {
 }
 
 class _MyStatefulWidgetState extends State<MyStatefulWidget> {
-  static const IconData icelandKronaCurrency =
-      IconData(0xe800, fontFamily: 'MyFlutterApp', fontPackage: null);
-
   int _selectedIndex = 0;
   late String valueText;
 
   static const List<Widget> _widgetOptions = <Widget>[
-    EuroItem(),
-    KronaItem(),
+    CalculatorScreen(),
+    MapScreen()
   ];
 
   void _onItemTapped(int index) {
@@ -60,7 +58,7 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
 
   @override
   void initState() {
-    valueText = context.read<Rate>().rateEuroKrona.toString();
+    valueText = context.read<Rate>().currentCurrency.rate.toString();
     super.initState();
   }
 
@@ -68,14 +66,23 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: Colors.blue.shade900,
         title: const Text('Iceland Trip'),
         actions: [
           Padding(
               padding: const EdgeInsets.only(right: 20.0),
               child: GestureDetector(
                 onTap: () {
+                  context.read<Rate>().changeMode();
+                },
+                child: const Icon(Icons.swap_vert, size: 26.0),
+              )),
+          Padding(
+              padding: const EdgeInsets.only(right: 20.0),
+              child: GestureDetector(
+                onTap: () {
                   _textFieldController.text =
-                      context.read<Rate>().rateEuroKrona.toString();
+                      context.read<Rate>().currentCurrency.rate.toString();
                   _displayTextInputDialog(context);
                 },
                 child: const Icon(Icons.settings, size: 26.0),
@@ -91,13 +98,10 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
         type: BottomNavigationBarType.fixed,
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(
-            icon: Icon(Icons.euro),
-            label: 'Euro',
+            icon: Icon(Icons.calculate),
+            label: 'Calculator',
           ),
-          BottomNavigationBarItem(
-            icon: Icon(icelandKronaCurrency),
-            label: 'Krona',
-          ),
+          BottomNavigationBarItem(icon: Icon(Icons.map), label: 'Maps'),
         ],
         currentIndex: _selectedIndex,
         selectedItemColor: Colors.blue[800],
@@ -158,6 +162,7 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
                 onPressed: () {
                   valueText = Tools.isNumeric(valueText) ? valueText : '0';
                   context.read<Rate>().changeRate(double.parse(valueText));
+                  context.read<Rate>().changeMode();
                   Navigator.pop(context);
                 },
               ),
